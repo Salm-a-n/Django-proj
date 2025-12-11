@@ -1,0 +1,55 @@
+{% extends 'layout/base.html' %}
+{% block title %}Recipes{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-center">Chef Demo — Recipes</h2>
+
+<div class="card shadow">
+  <div class="card-body p-0">
+    <table class="table table-hover table-bordered mb-0 align-middle">
+      <thead class="table-dark text-center">
+        <tr>
+          <th>Recipe Name</th>
+          <th>View</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Chocolate Cake</td>
+          <td class="text-center">
+            <a class="btn btn-sm btn-primary" href="{% url 'recipe_detail'  %}">View</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Pasta Primavera</td>
+          <td class="text-center">
+            <a class="btn btn-sm btn-primary" href="{% url 'recipe_detail'  %}">View</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Fruit Salad</td>
+          <td class="text-center">
+            <a class="btn btn-sm btn-primary" href="{% url 'recipe_detail'  %}">View</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer text-center">
+    <a href="{% url 'users_list' %}" class="btn btn-secondary">Back</a>
+  </div>
+</div>
+
+<nav aria-label="User pagination" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled">
+      <span class="page-link">Previous</span>
+    </li>
+    <li class="page-item active"><span class="page-link">1</span></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item">
+      <a class="page-link" href="#">Next</a>
+    </li>
+  </ul>
+</nav>
+{% endblock %}

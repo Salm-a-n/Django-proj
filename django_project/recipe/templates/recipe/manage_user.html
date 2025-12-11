@@ -1,0 +1,66 @@
+{% extends 'layout/base.html' %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<h2>Manage Users</h2>
+ <div >
+    <a href="{% url 'users_list' %}" class="btn btn-secondary">Back</a>
+  </div>
+<table class="table table-hover">
+  <thead>
+    <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>ID</th>
+        <th>Unblock</th>
+    </tr>
+</thead>
+  <tbody>
+    <tr>
+        <td>user1</td>
+        <td>user1@mail.com</td>
+        <td>201</td>
+       <td><button class="btn btn-sm btn-success" onclick="toggleBlock(this)">Unblock</button></td>
+    </tr>
+    <tr>
+        <td>user2</td>
+        <td>user2@mail.com</td>
+        <td>202</td>
+        <td><button class="btn btn-sm btn-success" onclick="toggleBlock(this)">Unblock</button></td>
+    </tr>
+    <tr>
+        <td>user3</td>
+        <td>user3@mail.com</td>
+        <td>203</td>
+        <td><button class="btn btn-sm btn-success" onclick="toggleBlock(this)">Unblock</button></td>
+    </tr>
+  </tbody>
+</table>
+
+<nav aria-label="User pagination" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled">
+      <span class="page-link">Previous</span>
+    </li>
+    <li class="page-item active"><span class="page-link">1</span></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item">
+      <a class="page-link" href="#">Next</a>
+    </li>
+  </ul>
+</nav>
+
+<script>
+  function toggleBlock(btn) {
+    if (btn.textContent.trim() === "Block") {
+      btn.textContent = "Unblock";
+      btn.classList.remove("btn-warning");
+      btn.classList.add("btn-success");
+    } else {
+      btn.textContent = "Block";
+      btn.classList.remove("btn-success");
+      btn.classList.add("btn-warning");
+    }
+  }
+</script>
+{% endblock %}

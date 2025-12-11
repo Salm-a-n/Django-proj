@@ -1,0 +1,72 @@
+
+body {
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.login-card .card-header {
+    background: #28a745;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.btn-custom {
+    background: #28a745;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.btn-custom:hover {
+    background: #218838;
+    transform: scale(1.05);
+}
+
+
+@media (max-width: 576px) {
+    body {
+        background: #f8f9fa; 
+    }
+    .login-card {
+        margin: 20px;
+        box-shadow: none;
+    }
+    .login-card .card-header {
+        font-size: 1rem;
+    }
+    .btn-custom {
+        font-size: 0.9rem;
+        background: #007bff;
+        color: #fff;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+    .login-card {
+        margin-top: 50px;
+    }
+    .login-card .card-header {
+        font-size: 1.1rem;
+    }
+}
+
+@media (min-width: 993px) {
+    .login-card {
+        margin-top: 100px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .login-card .card-header {
+        font-size: 1.3rem;
+    }
+    .btn-custom {
+        font-size: 1rem;
+    }
+}
