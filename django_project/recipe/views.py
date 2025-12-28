@@ -6,12 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import  HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND,HTTP_403_FORBIDDEN
+from rest_framework.status import  HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND,HTTP_403_FORBIDDEN,HTTP_400_BAD_REQUEST
 from django.http import JsonResponse
 from .models import User,Recipe
-
-
-
 
 # direct actions 
 def login(request):
@@ -47,6 +44,11 @@ def Signup(request):
         name = request.data.get("name")
         if not name or not email or not password:
             return Response({'message':'All fields are required'})
+        if len(password) < 8:
+            return Response(
+                {"message": "Password must be at least 8 characters long"},
+                status=HTTP_400_BAD_REQUEST
+        )
         if User.objects.filter(email=email).exists():
             return  JsonResponse({'message':'Email already exist'})
         user = User.objects.create_user(email=email,password=password)
@@ -61,7 +63,7 @@ def Signup(request):
 def api_login(request):
     email = request.data.get("email")
     password = request.data.get("password")
-    if email is None or password is None:
+    if not email or not password:
         return Response({'error': 'Please provide both email and password'},
                         status=HTTP_400_BAD_REQUEST)
     user = authenticate(email=email, password=password)
@@ -133,7 +135,7 @@ def user_recipes(request):
             # 'steps': recipe.steps,
             'time': recipe.time,
             # 'difficulty': recipe.difficulty,
-            'image': recipe.image.url if recipe.image else None,
+            "image": request.build_absolute_uri(recipe.image.url) if recipe.image else None,
             'views': recipe.views
         })
     return Response({'recipes': recipe_list}, status=HTTP_200_OK)
@@ -162,7 +164,6 @@ def user_recipe_detail(request, recipe_id):
     return Response(data, status=HTTP_200_OK)
 
 # user recipe edit 
-
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def edit_user_recipe(request, recipe_id):
@@ -184,7 +185,6 @@ def edit_user_recipe(request, recipe_id):
 
     return Response({"message": "Recipe updated successfully"}, status=HTTP_200_OK)
 
-
 #public recipe api (all recipes)
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -197,7 +197,7 @@ def full_recipes(request):
             'title': recipe.title,
             'shef': recipe.shef.name,
             'time': recipe.time,
-            'image': recipe.image.url if recipe.image else None,
+           'image': request.build_absolute_uri(recipe.image.url) if recipe.image else None,# to genetare the path 
             'views': recipe.views
         })
     return Response({'recipes':recipe_list},status=HTTP_200_OK)
@@ -250,7 +250,7 @@ def search_recipes_public(request):
             "title": recipe.title,
             "shef": recipe.shef.name,
             "time": recipe.time,
-            "image": recipe.image.url if recipe.image else None,
+             'image': request.build_absolute_uri(recipe.image.url) if recipe.image else None,
             "views": recipe.views,
         })
 
@@ -274,7 +274,7 @@ def search_user_recipes(request):
             "id": recipe.id,
             "title": recipe.title,
             "time": recipe.time,
-            "image": recipe.image.url if recipe.image else None,
+            'image': request.build_absolute_uri(recipe.image.url) if recipe.image else None,
             "views": recipe.views,
         })
 
