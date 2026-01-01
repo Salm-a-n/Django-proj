@@ -6,15 +6,18 @@ from django.urls import path
 from recipe import views
 
 urlpatterns = [
-    path('demo/',views.demo,name='demo'),
-    path('login/', views.login, name='login'),
-    path('',views.users_list, name='users_list'),
+    path('',views.demo,name='demo'),
+    path('adminlogin/', views.admin_login, name='admin_login'),
+    path('all_user',views.users_list, name='users_list'),
+    path('all_user/<int:user_id>/toggle/', views.toggle_user_status, name='toggle_user'),
+    path('all_user/<int:user_id>/manage/', views.toggle_user_manage, name='toggle_user_manage'),
+    
+    path('all_user/<int:user_id>/recipes/', views.admin_user_recipes, name='user_recipes'),
+    path('recipe_detail/<int:recipe_id>/', views.recipe_detail, name='recipe_detail'),
     
     path('manage/', views.manage_users, name='manage_users'),
     path('most-viewed/', views.most_viewed, name='most_viewed'),
-    path('recipe_detail/', views.recipe_detail, name='recipe_detail'),
-    path('user_details/', views.userlist , name='userlist'),
-    path('logout/', views.logout_view, name='logout'),
+    path('adminlogout/', views.admin_logout, name='admin_logout'),
     
 #   api endpoints 
 #  general 

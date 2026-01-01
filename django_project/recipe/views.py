@@ -1,5 +1,17 @@
-from django.shortcuts import render, redirect
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>BACKEND VIEWS>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
+from django.contrib.auth import login as auth_login, logout
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from django.contrib.auth import get_user_model
+from .models import Recipe
+User = get_user_model()
+
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> API VIEWS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
@@ -11,26 +23,131 @@ from django.http import JsonResponse
 from .models import User,Recipe
 
 # direct actions 
-def login(request):
-    return render(request, 'recipe/login.html')
 def demo(request):
     return render(request, 'recipe/demo.html')
+
+def admin_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid() and form.get_user().is_admin:
+            user = form.get_user()
+            auth_login(request, user)
+            return redirect('/all_user')
+        elif form.is_valid():
+            messages.error(request, "You are not authorized to login Only admin can login here.")
+        else:
+            messages.error(request, "Invalid email or password.")
+    else:
+        form = AuthenticationForm()
+    return render(request, 'recipe/login.html', {'form': form})
+@login_required
+def admin_logout(request):
+    logout(request)
+    return redirect('/adminlogin/') 
+
+
+@never_cache
+@login_required
 def users_list(request):
-    return render(request, "recipe/dashboard.html")
+    search_query = request.GET.get("q", "").strip()
 
+    users = User.objects.filter(is_admin=False)
+
+    if search_query:
+        users = users.filter(name__icontains=search_query)
+
+    paginator = Paginator(users, 5)  
+    page_number = request.GET.get("page")
+    users_page = paginator.get_page(page_number)
+
+    return render(request, 'recipe/user_list.html', {
+        'users': users_page,
+        'search_query': search_query
+    })
+@login_required
+def toggle_user_status(request, user_id):
+    user = get_object_or_404(User, id=user_id, is_admin=False)
+    user.is_active = not user.is_active
+    user.save()
+    return redirect('users_list')
+
+@login_required
+def toggle_user_manage(request, user_id):
+    user = get_object_or_404(User, id=user_id, is_admin=False)
+    user.is_active = not user.is_active
+    user.save()
+    return redirect(request.META.get("HTTP_REFERER", "manage_users"))
+
+
+@login_required
+def admin_user_recipes(request, user_id):
+    user = get_object_or_404(User, id=user_id, is_admin=False)
+    recipes_qs = Recipe.objects.filter(shef=user).order_by("-id")
+
+    paginator = Paginator(recipes_qs, 2)  
+    page_number = request.GET.get("page")
+    recipes_page = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "recipe/user_details.html",
+        {
+            "user": user,
+            "recipes": recipes_page,
+        }
+    )
+
+def recipe_detail(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+
+    next_url = request.GET.get("next")
+
+    return render(
+        request,
+        "recipe/recipe_view.html",
+        {
+            "recipe": recipe,
+            "next_url": next_url
+        }
+    )
+
+
+@never_cache
+@login_required
 def manage_users(request):
-    return render(request, "recipe/manage_user.html")
+    search_query = request.GET.get("q", "").strip()
 
+    users = User.objects.filter(is_active=False)
+
+    if search_query:
+        users = users.filter(email__icontains=search_query)
+
+    paginator = Paginator(users, 5)
+    page_number = request.GET.get("page")
+    users_page = paginator.get_page(page_number)
+
+    return render(request, "recipe/manage_user.html", {
+        "users": users_page,
+        "search_query": search_query
+    })
+
+
+@login_required
 def most_viewed(request):
-    return render(request, "recipe/mostview.html")
+    search_query = request.GET.get("q", "").strip()
+    recipes = Recipe.objects.all().order_by('-views')
+    if search_query:
+        recipes = recipes.filter(title__icontains=search_query)
+    paginator = Paginator(recipes, 5)
+    page_number = request.GET.get("page")
+    recipes_page = paginator.get_page(page_number)
 
-def recipe_detail(request):
-    return render(request, "recipe/recipe_view.html")
+    return render(request, "recipe/mostview.html", {
+        "recipes": recipes_page,
+        "search_query": search_query
+    })
 
-def logout_view(request):
-    return redirect("users_list")
-def userlist (request):
-    return render(request,'recipe/user_details.html')
+
 
 
 # api actions
@@ -70,6 +187,11 @@ def api_login(request):
     if not user:
         return Response({'error': 'Inavlid Email or Password Please ReCheck and Try Again '},
                         status=HTTP_404_NOT_FOUND)
+    if not user.is_active:
+        return Response(
+            {'error': 'Your account is Blocked. Please contact admin.'},
+            status=HTTP_403_FORBIDDEN
+        )
     token, _ = Token.objects.get_or_create(user=user)
     return Response({'token': token.key},status=HTTP_200_OK)
 
