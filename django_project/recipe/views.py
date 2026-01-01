@@ -16,9 +16,10 @@ from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import  HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND,HTTP_403_FORBIDDEN,HTTP_400_BAD_REQUEST
+from rest_framework.status import  HTTP_200_OK, HTTP_400_BAD_REQUEST,HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND,HTTP_403_FORBIDDEN,HTTP_400_BAD_REQUEST
 from django.http import JsonResponse
 from .models import User,Recipe
 
@@ -173,27 +174,42 @@ def Signup(request):
         user.save()
         return JsonResponse({'message':'user created successsfully'} ,status = 200)    
     
+    #api login
+    
 @csrf_exempt
 @api_view(["POST"])
 @permission_classes((AllowAny,))
-
 def api_login(request):
     email = request.data.get("email")
     password = request.data.get("password")
     if not email or not password:
-        return Response({'error': 'Please provide both email and password'},
-                        status=HTTP_400_BAD_REQUEST)
-    user = authenticate(email=email, password=password)
-    if not user:
-        return Response({'error': 'Inavlid Email or Password Please ReCheck and Try Again '},
-                        status=HTTP_404_NOT_FOUND)
+        return Response(
+            {'error': 'Please provide both email and password'},
+            status=HTTP_400_BAD_REQUEST
+        )
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'Invalid email or password'},
+            status=HTTP_401_UNAUTHORIZED
+        )
     if not user.is_active:
         return Response(
-            {'error': 'Your account is Blocked. Please contact admin.'},
+            {'error': 'Your account is blocked. Please contact admin.'},
             status=HTTP_403_FORBIDDEN
         )
+    if not check_password(password, user.password):
+        return Response(
+            {'error': 'Invalid email or password'},
+            status=HTTP_401_UNAUTHORIZED
+        )
     token, _ = Token.objects.get_or_create(user=user)
-    return Response({'token': token.key},status=HTTP_200_OK)
+    return Response(
+        {'token': token.key},status=HTTP_200_OK)
+    
+    
+    
 
 # profile view
 @api_view(["GET"])
@@ -416,3 +432,13 @@ def delete_user_recipe(request, recipe_id):
         return Response({"error": "You are not allowed to delete this recipe"}, status=HTTP_403_FORBIDDEN)
     recipe.delete()
     return Response({"message": "Recipe deleted successfully"}, status=HTTP_200_OK)
+
+# api logout
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def user_logout_view(request):
+    request.user.auth_token.delete()
+    return Response(
+        {"message": "Logged out successfully"},
+        status=HTTP_200_OK
+    )

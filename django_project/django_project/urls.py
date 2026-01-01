@@ -29,9 +29,10 @@ urlpatterns = [
     path('api/add_recipe/',views.add_recipe, name='add_recipe'),
     path('api/user_recipes/',views.user_recipes, name='user_recipes'),
     path('api/user_recipes/<int:recipe_id>/',views.user_recipe_detail, name='user_recipe_detail'),
-    path("api/user_recipes/<int:recipe_id>/edit/", views.edit_user_recipe, name='edit_user_recipe'),
-    path("api/delete_user_recipe/<int:recipe_id>/",views.delete_user_recipe, name='delete_user_recipe'),
-    path("api/search_user_recipes/", views.search_user_recipes,name='search_user_recipes'),
+    path('api/user_recipes/<int:recipe_id>/edit/', views.edit_user_recipe, name='edit_user_recipe'),
+    path('api/delete_user_recipe/<int:recipe_id>/',views.delete_user_recipe, name='delete_user_recipe'),
+    path('api/search_user_recipes/', views.search_user_recipes,name='search_user_recipes'),
+    path('api/userlogout/',views.user_logout_view,name='user_logout_view'),
     # full recipes
     path('api/full_recipes/',views.full_recipes, name='full_recipes'),
     path('api/full_recipes/<int:recipe_id>/', views.uvRecipes, name='uvRecipes'),
